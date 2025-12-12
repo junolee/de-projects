@@ -31,3 +31,52 @@ URL = 's3://jl-walmart/data/'
 FILE_FORMAT = csv_format;
 
 ls @walmart_s3_stage;
+
+USE SCHEMA walmart_db.bronze;
+
+CREATE OR REPLACE TABLE walmart_db.bronze.stores_raw (
+    STORE STRING,
+    TYPE STRING,
+    SIZE STRING
+);
+
+CREATE OR REPLACE TABLE walmart_db.bronze.department_raw (
+    STORE STRING,
+    DEPT STRING,
+    DATE STRING,
+    WEEKLY_SALES STRING,
+    ISHOLIDAY STRING
+);
+
+CREATE OR REPLACE TABLE walmart_db.bronze.fact_raw (
+    STORE STRING,
+    DATE STRING,
+    TEMPERATURE STRING,
+    FUEL_PRICE STRING,
+    MARKDOWN1 STRING,
+    MARKDOWN2 STRING,
+    MARKDOWN3 STRING,
+    MARKDOWN4 STRING,
+    MARKDOWN5 STRING,
+    CPI STRING,
+    UNEMPLOYMENT STRING,
+    ISHOLIDAY STRING
+);
+
+ls @walmart_s3_stage;
+
+COPY INTO walmart_db.bronze.stores_raw
+FROM @walmart_s3_stage/stores.csv
+FILE_FORMAT = csv_format;
+
+COPY INTO walmart_db.bronze.department_raw
+FROM @walmart_s3_stage/department.csv
+FILE_FORMAT = csv_format;
+
+COPY INTO walmart_db.bronze.fact_raw
+FROM @walmart_s3_stage/fact.csv
+FILE_FORMAT = csv_format;
+
+SELECT * FROM walmart_db.bronze.stores_raw;
+SELECT * FROM walmart_db.bronze.department_raw;
+SELECT * FROM walmart_db.bronze.fact_raw;
