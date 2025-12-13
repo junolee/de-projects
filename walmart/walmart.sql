@@ -15,6 +15,7 @@ DESC INTEGRATION s3_int;
 
 CREATE OR REPLACE DATABASE walmart_db;
 CREATE OR REPLACE SCHEMA bronze;
+CREATE OR REPLACE SCHEMA silver;
 USE SCHEMA walmart_db.bronze;
 
 CREATE OR REPLACE FILE FORMAT csv_format
@@ -80,3 +81,38 @@ FILE_FORMAT = csv_format;
 SELECT * FROM walmart_db.bronze.stores_raw;
 SELECT * FROM walmart_db.bronze.department_raw;
 SELECT * FROM walmart_db.bronze.fact_raw;
+
+CREATE OR REPLACE TABLE walmart_db.silver.walmart_date_dim (
+    DATE_ID     INT,
+    STORE_DATE  DATE,
+    ISHOLIDAY   VARCHAR,
+    INSERT_DATE TIMESTAMP,
+    UPDATE_DATE TIMESTAMP
+);
+
+CREATE OR REPLACE TABLE walmart_db.silver.walmart_store_dim (
+    STORE_ID    INT,
+    DEPT_ID     INT,
+    STORE_TYPE  VARCHAR,
+    INSERT_DATE TIMESTAMP,
+    UPDATE_DATE TIMESTAMP
+);
+
+CREATE OR REPLACE TABLE walmart_db.silver.walmart_fact_table (
+    STORE_ID            INT,
+    DEPT_ID             INT,
+    STORE_WEEKLY_SALES  DECIMAL,
+    FUEL_PRICE          DECIMAL,
+    STORE_TEMPERATURE   DECIMAL,
+    UNEMPLOYMENT        DECIMAL,
+    CPI                 DECIMAL,
+    MARKDOWN1           DECIMAL,
+    MARKDOWN2           DECIMAL,
+    MARKDOWN3           DECIMAL,
+    MARKDOWN4           DECIMAL,
+    MARKDOWN5           DECIMAL,
+    INSERT_DATE         TIMESTAMP,
+    UPDATE_DATE         TIMESTAMP,
+    VRSN_START_DATE     TIMESTAMP,
+    VRSN_END_DATE       TIMESTAMP
+);
