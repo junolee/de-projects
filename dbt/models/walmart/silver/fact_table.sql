@@ -36,6 +36,6 @@ SELECT
     f.markdown5,
     CURRENT_TIMESTAMP() AS insert_date,
     CURRENT_TIMESTAMP() AS update_date
-FROM stg_dept d
-JOIN stg_fact f 
-ON d.store_date = f.store_date AND d.store_id = f.store_id
+    FROM stg_dept d
+    JOIN stg_fact f 
+    ON d.store_date = f.store_date AND d.store_id = f.store_id
