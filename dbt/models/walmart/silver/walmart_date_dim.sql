@@ -19,6 +19,7 @@ WITH dates AS ( {{
     {% if is_incremental() %}
     WHERE loaded_at > (SELECT MAX(update_date) FROM {{ this }})
     {% endif %}
+    GROUP BY (store_date, isholiday)
 ), existing AS (
     SELECT date_id, store_date, isholiday, insert_date, update_date
     FROM {{ this }}
