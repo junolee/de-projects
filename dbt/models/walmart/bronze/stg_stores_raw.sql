@@ -6,8 +6,7 @@ renamed as (
         store::INT AS store_id,
         type::VARCHAR AS store_type,
         size::INT AS store_size,
-        insert_date,
-        update_date
+        loaded_at
     FROM source
 )
 
