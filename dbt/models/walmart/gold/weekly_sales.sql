@@ -2,7 +2,12 @@ WITH fact AS (
     SELECT * FROM {{ ref("walmart_fact_snapshot") }}
     WHERE vrsn_end_date is NULL
 ), stores AS (
-    SELECT * FROM {{ ref("walmart_store_dim") }}
+    SELECT 
+        store_id,
+        store_type,
+        store_size
+    FROM {{ ref("walmart_store_dim") }}
+    GROUP BY (store_id, store_type, store_size)
 ), dates AS (
     SELECT * FROM {{ ref("walmart_date_dim") }}
 )
