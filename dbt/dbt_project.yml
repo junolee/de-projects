@@ -17,7 +17,7 @@ models:
   dea_projects:
     walmart:
       +database: walmart_db
-      staging:
+      bronze:
         +schema: bronze
         +materialized: view
 
