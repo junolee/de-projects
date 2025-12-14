@@ -15,8 +15,7 @@ renamed as (
         NULLIF(cpi, 'NA')::DECIMAL(38, 8) AS cpi,
         NULLIF(unemployment, 'NA')::DECIMAL(38, 3) AS unemployment,
         isholiday::BOOLEAN AS isholiday,
-        insert_date,
-        update_date
+        loaded_at
     FROM source
 )
 
