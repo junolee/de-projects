@@ -10,15 +10,20 @@ CREATE OR REPLACE STORAGE INTEGRATION s3_int
     STORAGE_ALLOWED_LOCATIONS = (
     's3://jl-walmart/data/'
 );
-
 DESC INTEGRATION s3_int;
 
 CREATE OR REPLACE DATABASE walmart_db;
+USE DATABASE walmart_db;
+
 CREATE OR REPLACE SCHEMA bronze;
 CREATE OR REPLACE SCHEMA silver;
+
+
+-- Create file format and external stage
+
 USE SCHEMA walmart_db.bronze;
 
-CREATE OR REPLACE FILE FORMAT csv_format
+CREATE OR REPLACE FILE FORMAT bronze.csv_format
 TYPE = CSV
 FIELD_DELIMITER = ','
 FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -26,19 +31,22 @@ SKIP_HEADER = 1
 NULL_IF = ('NULL', 'null')
 EMPTY_FIELD_AS_NULL = true;
 
-CREATE OR REPlACE STAGE walmart_s3_stage
+CREATE OR REPLACE STAGE bronze.walmart_s3_stage
 STORAGE_INTEGRATION = s3_int
 URL = 's3://jl-walmart/data/'
 FILE_FORMAT = csv_format;
-
 ls @walmart_s3_stage;
+
+
+-- Define source tables
 
 USE SCHEMA walmart_db.bronze;
 
 CREATE OR REPLACE TABLE walmart_db.bronze.stores_raw (
     STORE STRING,
     TYPE STRING,
-    SIZE STRING
+    SIZE STRING,
+    LOADED_AT TIMESTAMP
 );
 
 CREATE OR REPLACE TABLE walmart_db.bronze.department_raw (
@@ -46,7 +54,8 @@ CREATE OR REPLACE TABLE walmart_db.bronze.department_raw (
     DEPT STRING,
     DATE STRING,
     WEEKLY_SALES STRING,
-    ISHOLIDAY STRING
+    ISHOLIDAY STRING,
+    LOADED_AT TIMESTAMP
 );
 
 CREATE OR REPLACE TABLE walmart_db.bronze.fact_raw (
@@ -61,26 +70,13 @@ CREATE OR REPLACE TABLE walmart_db.bronze.fact_raw (
     MARKDOWN5 STRING,
     CPI STRING,
     UNEMPLOYMENT STRING,
-    ISHOLIDAY STRING
+    ISHOLIDAY STRING,
+    LOADED_AT TIMESTAMP
 );
 
-ls @walmart_s3_stage;
+-- Define target tables
 
-COPY INTO walmart_db.bronze.stores_raw
-FROM @walmart_s3_stage/stores.csv
-FILE_FORMAT = csv_format;
-
-COPY INTO walmart_db.bronze.department_raw
-FROM @walmart_s3_stage/department.csv
-FILE_FORMAT = csv_format;
-
-COPY INTO walmart_db.bronze.fact_raw
-FROM @walmart_s3_stage/fact.csv
-FILE_FORMAT = csv_format;
-
-SELECT * FROM walmart_db.bronze.stores_raw;
-SELECT * FROM walmart_db.bronze.department_raw;
-SELECT * FROM walmart_db.bronze.fact_raw;
+USE SCHEMA walmart_db.silver;
 
 CREATE OR REPLACE TABLE walmart_db.silver.walmart_date_dim (
     DATE_ID     INT,
@@ -116,3 +112,69 @@ CREATE OR REPLACE TABLE walmart_db.silver.walmart_fact_table (
     VRSN_START_DATE     TIMESTAMP,
     VRSN_END_DATE       TIMESTAMP
 );
+
+
+
+
+-- Load source tables
+
+COPY INTO walmart_db.bronze.stores_raw
+FROM (
+    SELECT
+        $1 AS store,
+        $2 AS type,
+        $3 AS size,
+        CURRENT_TIMESTAMP() AS loaded_at
+FROM @walmart_s3_stage/stores.csv
+) FILE_FORMAT = csv_format;
+
+COPY INTO walmart_db.bronze.department_raw
+FROM (
+    SELECT
+        $1 AS store,
+        $2 AS dept,
+        $3 AS date,
+        $4 AS weekly_sales,
+        $5 AS isholiday,
+        CURRENT_TIMESTAMP() AS loaded_at
+    FROM @walmart_s3_stage/department.csv
+) FILE_FORMAT = csv_format;
+
+COPY INTO walmart_db.bronze.fact_raw
+FROM (
+    SELECT
+        $1 AS store,
+        $2 AS date,
+        $3 AS temperature,
+        $4 AS fuel_price,
+        $5 AS markdown1,
+        $6 AS markdown2,
+        $7 AS markdown3,
+        $8 AS markdown4,
+        $9 AS markdown5,
+        $10 AS cpi,
+        $11 AS unemployment,
+        $12 AS isholiday,
+        CURRENT_TIMESTAMP() AS loaded_at
+    FROM @walmart_s3_stage/fact.csv
+) FILE_FORMAT = csv_format;
+
+
+
+-- Queries
+
+-- after loading
+SELECT * FROM walmart_db.bronze.stores_raw;
+SELECT * FROM walmart_db.bronze.department_raw;
+SELECT * FROM walmart_db.bronze.fact_raw;
+
+-- after building dbt staging models
+SELECT * FROM walmart_db.bronze.stg_stores_raw;
+SELECT * FROM walmart_db.bronze.stg_department_raw;
+SELECT * FROM walmart_db.bronze.stg_fact_raw;
+
+-- after building dbt silver models
+SELECT * FROM silver.walmart_store_dim;
+SELECT * FROM silver.walmart_date_dim;
+SELECT * FROM silver.walmart_fact_table;
+SELECT * FROM snapshots.walmart_fact_snapshot;
