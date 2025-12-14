@@ -38,4 +38,3 @@ SELECT
 FROM stg_dept d
 JOIN stg_stores s ON d.store_id = s.store_id
 LEFT JOIN existing e ON e.store_id = d.store_id AND e.dept_id = d.dept_id
-\
