@@ -1,3 +1,11 @@
+{{
+    config(
+        materialized='incremental',
+        incremental_strategy='merge',
+        unique_key='date_id'
+    )
+}}
+
 WITH dates AS ( {{ 
     dbt_utils.date_spine(
         datepart="week",
@@ -8,13 +16,20 @@ WITH dates AS ( {{
         store_date,
         isholiday
     FROM {{ ref("stg_fact_raw") }}
+    {% if is_incremental() %}
+    WHERE loaded_at > (SELECT MAX(update_date) FROM {{ this }})
+    {% endif %}
+), existing AS (
+    SELECT date_id, store_date, isholiday, insert_date, update_date
+    FROM {{ this }}
 )
 SELECT
     TO_VARCHAR(d.date_week, 'yyyyMMdd')::INT AS date_id,
     d.date_week AS store_date,
     f.isholiday,
-    CURRENT_TIMESTAMP() AS insert_date,
+    COALESCE( e.insert_date, CURRENT_TIMESTAMP() ) AS insert_date,
     CURRENT_TIMESTAMP() AS update_date
 FROM dates AS d
 LEFT OUTER JOIN stg_fact AS f ON d.date_week = f.store_date
+LEFT JOIN existing e ON d.date_week = e.store_date
 
