@@ -19,7 +19,8 @@ WITH stg_dept AS (
 stg_stores AS (
     SELECT
         store_id,
-        store_type
+        store_type,
+        store_size,
     FROM {{ ref("stg_stores_raw") }}
     {% if is_incremental() %}
     WHERE loaded_at > (SELECT MAX(update_date) FROM {{ this }})
@@ -33,6 +34,7 @@ SELECT
     d.store_id,
     d.dept_id,
     s.store_type,
+    s.store_size,
     COALESCE( e.insert_date, CURRENT_TIMESTAMP() ) AS insert_date,
     CURRENT_TIMESTAMP() AS update_date
 FROM stg_dept d
