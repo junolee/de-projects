@@ -15,10 +15,10 @@ clean-targets:         # removed by `dbt clean`
 
 models:
   dea_projects:
-    +materialized: table
     walmart:
       +database: walmart_db
-      bronze:
-        schema: bronze
-      silver:
-        schema: silver
+      staging:
+        +schema: bronze
+        +materialized: view
+
+
