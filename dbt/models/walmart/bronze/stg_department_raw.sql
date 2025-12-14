@@ -7,7 +7,7 @@ renamed as (
         dept::INT AS dept_id,
         date::DATE AS store_date,
         CAST(weekly_sales * 100 AS INT) / 100.0 AS store_weekly_sales,
-        isholiday::BOOLEAN AS store_size,
+        isholiday::BOOLEAN AS isholiday,
         insert_date,
         update_date
     FROM source
