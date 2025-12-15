@@ -1,10 +1,21 @@
 version: 2
 
+models:
+  - name: stg_stores_raw
+    config:
+      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/', config='walmart')}}"
+  - name: stg_department_raw
+    config:
+      pre_hook: "{{load_csv(table_name='department_raw', path='department/', config='walmart')}}"
+  - name: stg_fact_raw
+    config:
+      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/', config='walmart')}}"
+
 sources:  
   - name: walmart
     database: walmart_db
     schema: bronze
     tables: 
-      - name: department_raw
       - name: stores_raw
+      - name: department_raw
       - name: fact_raw
