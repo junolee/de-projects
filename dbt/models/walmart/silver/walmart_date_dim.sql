@@ -14,10 +14,11 @@ WITH dates AS ( {{
 ), stg_fact AS (
     SELECT
         store_date,
-        isholiday
+        isholiday,
+        MAX(loaded_at) AS loaded_at
     FROM {{ ref("stg_fact_raw") }}
     {% if is_incremental() %}
-    WHERE loaded_at > (SELECT MAX(update_date) FROM {{ this }})
+    WHERE loaded_at > (SELECT COALESCE(MAX(loaded_at), '1900-01-01') FROM {{ this }})
     {% endif %}
     GROUP BY (store_date, isholiday)
 ), existing AS (
@@ -29,7 +30,8 @@ SELECT
     d.date_week AS store_date,
     f.isholiday,
     COALESCE( e.insert_date, CURRENT_TIMESTAMP() ) AS insert_date,
-    CURRENT_TIMESTAMP() AS update_date
+    CURRENT_TIMESTAMP() AS update_date,
+    loaded_at    
 FROM dates AS d
 LEFT OUTER JOIN stg_fact AS f ON d.date_week = f.store_date
 LEFT JOIN existing e ON d.date_week = e.store_date
