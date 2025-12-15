@@ -19,7 +19,7 @@ models:
       +database: walmart_db
       bronze:
         +schema: bronze
-        +materialized: view
+        +materialized: table
       silver:
         +schema: silver
         +materialized: table
