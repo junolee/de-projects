@@ -17,6 +17,8 @@ USE DATABASE walmart_db;
 
 CREATE OR REPLACE SCHEMA bronze;
 CREATE OR REPLACE SCHEMA silver;
+CREATE OR REPLACE SCHEMA snapshots;
+CREATE OR REPLACE SCHEMA gold;
 
 
 -- Create file format and external stage
@@ -90,6 +92,7 @@ CREATE OR REPLACE TABLE walmart_db.silver.walmart_store_dim (
     STORE_ID    INT,
     DEPT_ID     INT,
     STORE_TYPE  VARCHAR,
+    STORE_SIZE  INT,
     INSERT_DATE TIMESTAMP,
     UPDATE_DATE TIMESTAMP
 );
@@ -117,6 +120,7 @@ CREATE OR REPLACE TABLE walmart_db.silver.walmart_fact_table (
 
 
 -- Load source tables
+USE SCHEMA walmart_db.bronze;
 
 COPY INTO walmart_db.bronze.stores_raw
 FROM (
@@ -178,3 +182,5 @@ SELECT * FROM silver.walmart_store_dim;
 SELECT * FROM silver.walmart_date_dim;
 SELECT * FROM silver.walmart_fact_table;
 SELECT * FROM snapshots.walmart_fact_snapshot;
+SELECT * FROM gold.weekly_sales;
+
