@@ -1,4 +1,4 @@
-name: 'dea_projects'
+name: 'de_projects'
 config-version: 2
 version: '1.0.0'
 
@@ -22,7 +22,7 @@ vars:
       force: TRUE
 
 models:
-  dea_projects:
+  de_projects:
     walmart:
       +database: walmart_db
       bronze:
