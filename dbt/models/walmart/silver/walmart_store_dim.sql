@@ -33,7 +33,9 @@ store_dept_keys AS (
         dept_id, 
         MAX(loaded_at) AS loaded_at 
     FROM {{ ref("stg_department_raw") }}
+    {% if is_incremental() %}
     WHERE store_id IN (SELECT store_id FROM changed_stores)
+    {% endif %}
     GROUP BY 1, 2 
 ), 
 
@@ -44,7 +46,9 @@ stores_latest AS (
         store_size,
         loaded_at
     FROM {{ ref('stg_stores_raw') }}
+    {% if is_incremental() %}
     WHERE store_id IN (SELECT store_id FROM changed_stores)
+    {% endif %}
     QUALIFY ROW_NUMBER() OVER (PARTITION BY store_id ORDER BY loaded_at DESC) = 1
 
 ), 
