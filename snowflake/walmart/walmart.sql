@@ -64,6 +64,48 @@ CREATE OR REPLACE TABLE walmart_db.bronze.fact_raw (
     LOADED_AT TIMESTAMP
 );
 
+-- Define target tables
+
+USE SCHEMA walmart_db.silver;
+
+CREATE OR REPLACE TABLE walmart_db.silver.walmart_date_dim (
+    DATE_ID     INT,
+    STORE_DATE  DATE,
+    ISHOLIDAY   VARCHAR,
+    INSERT_DATE TIMESTAMP,
+    UPDATE_DATE TIMESTAMP,
+    LOADED_AT TIMESTAMP
+);
+
+CREATE OR REPLACE TABLE walmart_db.silver.walmart_store_dim (
+    STORE_ID    INT,
+    DEPT_ID     INT,
+    STORE_TYPE  VARCHAR,
+    STORE_SIZE  INT,
+    INSERT_DATE TIMESTAMP,
+    UPDATE_DATE TIMESTAMP,
+    LOADED_AT TIMESTAMP
+);
+
+CREATE OR REPLACE TABLE walmart_db.silver.walmart_fact_table (
+    STORE_ID            INT,
+    DEPT_ID             INT,
+    STORE_WEEKLY_SALES  DECIMAL,
+    FUEL_PRICE          DECIMAL,
+    STORE_TEMPERATURE   DECIMAL,
+    UNEMPLOYMENT        DECIMAL,
+    CPI                 DECIMAL,
+    MARKDOWN1           DECIMAL,
+    MARKDOWN2           DECIMAL,
+    MARKDOWN3           DECIMAL,
+    MARKDOWN4           DECIMAL,
+    MARKDOWN5           DECIMAL,
+    INSERT_DATE         TIMESTAMP,
+    UPDATE_DATE         TIMESTAMP,
+    VRSN_START_DATE     TIMESTAMP,
+    VRSN_END_DATE       TIMESTAMP,
+    LOADED_AT TIMESTAMP
+);
 
 -- Queries
 
