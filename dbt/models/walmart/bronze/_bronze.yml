@@ -12,7 +12,7 @@ models:
   - name: stg_dept_sales
     config:
       pre_hook: "{{load_csv(table_name='department_raw', path='department/')}}"
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns:
@@ -32,7 +32,7 @@ models:
   - name: stg_signals
     config:
       pre_hook: "{{load_csv(table_name='fact_raw', path='fact/')}}"
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
             combination_of_columns:
