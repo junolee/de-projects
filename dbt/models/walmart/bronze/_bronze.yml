@@ -3,13 +3,13 @@ version: 2
 models:
   - name: stg_stores
     config:
-      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/', config='walmart')}}"
+      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/', key='walmart')}}"
   - name: stg_dept_sales
     config:
-      pre_hook: "{{load_csv(table_name='department_raw', path='department/', config='walmart')}}"
+      pre_hook: "{{load_csv(table_name='department_raw', path='department/', key='walmart')}}"
   - name: stg_signals
     config:
-      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/', config='walmart')}}"
+      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/', key='walmart')}}"
 
 sources:  
   - name: walmart

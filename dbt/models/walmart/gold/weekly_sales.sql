@@ -1,15 +1,15 @@
 WITH fact AS (
-    SELECT * FROM {{ ref("walmart_fact_snapshot") }}
+    SELECT * FROM {{ ref("sales_enriched_snapshot") }}
     WHERE vrsn_end_date is NULL
 ), stores AS (
     SELECT 
         store_id,
         store_type,
         store_size
-    FROM {{ ref("walmart_store_dim") }}
+    FROM {{ ref("dim_store") }}
     GROUP BY (store_id, store_type, store_size)
 ), dates AS (
-    SELECT * FROM {{ ref("walmart_date_dim") }}
+    SELECT * FROM {{ ref("dim_date") }}
 )
 SELECT
     f.store_id,

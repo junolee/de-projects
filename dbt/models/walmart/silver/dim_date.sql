@@ -16,7 +16,7 @@ fact_dates_latest AS (
         store_date,
         isholiday,
         loaded_at
-    FROM {{ ref("stg_fact_raw") }}
+    FROM {{ ref("stg_signals") }}
     {% if is_incremental() %}
     WHERE loaded_at > (SELECT wm FROM watermark)
     {% endif %}
