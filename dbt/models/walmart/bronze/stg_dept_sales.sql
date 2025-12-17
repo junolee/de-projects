@@ -1,5 +1,5 @@
 WITH source AS (
-    SELECT * from {{ source('walmart', 'department_raw')}}
+    SELECT * from {{ source('walmart', 'dept_sales_raw')}}
 ),
 renamed as (
     SELECT

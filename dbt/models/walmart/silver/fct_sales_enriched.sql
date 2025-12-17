@@ -18,7 +18,7 @@ WITH deduped_store_fact AS (
         markdown4,
         markdown5,
         loaded_at
-    FROM {{ ref("stg_fact_raw") }}
+    FROM {{ ref("stg_signals") }}
     QUALIFY ROW_NUMBER() OVER(PARTITION BY store_id, store_date ORDER BY loaded_at DESC) = 1
 ), deduped_dept_fact AS (
     SELECT
@@ -27,7 +27,7 @@ WITH deduped_store_fact AS (
         dept_id,
         store_weekly_sales,
         loaded_at
-    FROM {{ ref("stg_department_raw") }}
+    FROM {{ ref("stg_dept_sales") }}
     QUALIFY ROW_NUMBER() OVER(PARTITION BY store_id, store_date, dept_id ORDER BY loaded_at DESC) = 1
 )
 SELECT

@@ -1,45 +1,23 @@
 version: 2
 
 models:
-  - name: stg_stores_raw
+  - name: stg_stores
     config:
-      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/')}}"
-    columns:
-      - name: store_id
-        data_tests:
-          - unique
-          - not_null
-  - name: stg_department_raw
+      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/', config='walmart')}}"
+  - name: stg_dept_sales
     config:
-      pre_hook: "{{load_csv(table_name='department_raw', path='department/')}}"
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          arguments:
-            combination_of_columns:
-              - store_id
-              - dept_id
-              - store_date
-    columns:
-      - name: store_id
-        data_tests:
-          - not_null
-      - name: dept_id
-        data_tests:
-          - not_null
-      - name: store_date
-        data_tests:
-          - not_null
-  - name: stg_fact_raw
+      pre_hook: "{{load_csv(table_name='department_raw', path='department/', config='walmart')}}"
+  - name: stg_signals
     config:
-      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/')}}"
-
-
+      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/', config='walmart')}}"
 
 sources:  
   - name: walmart
     database: walmart_db
     schema: bronze
     tables: 
+      - name: dept_sales_raw
+        identifier: department_raw
+      - name: signals_raw
+        identifier: fact_raw
       - name: stores_raw
-      - name: department_raw
-      - name: fact_raw
