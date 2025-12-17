@@ -1,13 +1,13 @@
 version: 2
 
 models:
-  - name: stg_stores_raw
+  - name: stg_stores
     config:
       pre_hook: "{{load_csv(table_name='stores_raw', path='stores/', config='walmart')}}"
-  - name: stg_department_raw
+  - name: stg_dept_sales
     config:
       pre_hook: "{{load_csv(table_name='department_raw', path='department/', config='walmart')}}"
-  - name: stg_fact_raw
+  - name: stg_signals
     config:
       pre_hook: "{{load_csv(table_name='fact_raw', path='fact/', config='walmart')}}"
 
@@ -16,6 +16,8 @@ sources:
     database: walmart_db
     schema: bronze
     tables: 
+      - name: dept_sales_raw
+        identifier: department_raw
+      - name: signals_raw
+        identifier: fact_raw
       - name: stores_raw
-      - name: department_raw
-      - name: fact_raw

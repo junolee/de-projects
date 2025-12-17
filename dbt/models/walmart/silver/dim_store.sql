@@ -12,18 +12,18 @@ WITH watermark AS (
 changed_stores AS (
   {% if is_incremental() %}
     SELECT DISTINCT store_id 
-    FROM {{ ref("stg_stores_raw") }} 
+    FROM {{ ref("stg_stores") }} 
     WHERE loaded_at > (SELECT wm FROM watermark)
 
     UNION
 
     SELECT DISTINCT store_id 
-    FROM {{ ref("stg_department_raw") }} 
+    FROM {{ ref("stg_dept_sales") }} 
     WHERE loaded_at > (SELECT wm FROM watermark)
   {% else %}
-    SELECT DISTINCT store_id FROM {{ ref("stg_stores_raw") }} 
+    SELECT DISTINCT store_id FROM {{ ref("stg_stores") }} 
     UNION
-    SELECT DISTINCT store_id FROM {{ ref("stg_department_raw") }} 
+    SELECT DISTINCT store_id FROM {{ ref("stg_dept_sales") }} 
   {% endif %}
 ), 
 
@@ -32,7 +32,7 @@ store_dept_keys AS (
         store_id, 
         dept_id, 
         MAX(loaded_at) AS loaded_at 
-    FROM {{ ref("stg_department_raw") }}
+    FROM {{ ref("stg_dept_sales") }}
     {% if is_incremental() %}
     WHERE store_id IN (SELECT store_id FROM changed_stores)
     {% endif %}
@@ -45,7 +45,7 @@ stores_latest AS (
         store_type,
         store_size,
         loaded_at
-    FROM {{ ref('stg_stores_raw') }}
+    FROM {{ ref('stg_stores') }}
     {% if is_incremental() %}
     WHERE store_id IN (SELECT store_id FROM changed_stores)
     {% endif %}

@@ -1,4 +1,4 @@
-{% snapshot walmart_fact_snapshot %}
+{% snapshot sales_enriched_snapshot %}
 {{
     config(
       target_database='walmart_db',
@@ -21,5 +21,5 @@
       }
     )
 }}
-select * from {{ ref('walmart_fact_table') }}
+select * from {{ ref('fct_sales_enriched') }}
 {% endsnapshot %}
