@@ -4,6 +4,7 @@ version: '1.0.0'
 profile: 'default'
 
 model-paths: ["models"]
+test-paths: ["tests"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 target-path: "target"
@@ -15,7 +16,7 @@ vars:
       target_schema: walmart_db.bronze
       stage: walmart_db.bronze.walmart_s3_stage
       file_format: walmart_db.bronze.csv_format
-      force: TRUE
+      force: FALSE
 
 models:
   de_projects:

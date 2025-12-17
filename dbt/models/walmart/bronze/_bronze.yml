@@ -3,15 +3,15 @@ version: 2
 models:
   - name: stg_stores_raw
     config:
-      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/'}}"
+      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/')}}"
     columns:
-      - name: store
+      - name: store_id
         data_tests:
           - unique
           - not_null
   - name: stg_department_raw
     config:
-      pre_hook: "{{load_csv(table_name='department_raw', path='department/'}}"
+      pre_hook: "{{load_csv(table_name='department_raw', path='department/')}}"
     tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -31,7 +31,7 @@ models:
           - not_null
   - name: stg_fact_raw
     config:
-      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/'}}"
+      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/')}}"
 
 
 
