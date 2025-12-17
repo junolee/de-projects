@@ -1,1 +1,1 @@
-# dea-projects
+# DE projects
