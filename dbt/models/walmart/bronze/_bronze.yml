@@ -3,13 +3,37 @@ version: 2
 models:
   - name: stg_stores_raw
     config:
-      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/', config='walmart')}}"
+      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/'}}"
+    columns:
+      - name: store
+        data_tests:
+          - unique
+          - not_null
   - name: stg_department_raw
     config:
-      pre_hook: "{{load_csv(table_name='department_raw', path='department/', config='walmart')}}"
+      pre_hook: "{{load_csv(table_name='department_raw', path='department/'}}"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - store_id
+              - dept_id
+              - store_date
+    columns:
+      - name: store_id
+        data_tests:
+          - not_null
+      - name: dept_id
+        data_tests:
+          - not_null
+      - name: store_date
+        data_tests:
+          - not_null
   - name: stg_fact_raw
     config:
-      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/', config='walmart')}}"
+      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/'}}"
+
+
 
 sources:  
   - name: walmart
