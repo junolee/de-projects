@@ -3,13 +3,49 @@ version: 2
 models:
   - name: stg_stores
     config:
-      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/', key='walmart')}}"
+      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/')}}"
+    columns:
+      - name: store_id
+        data_tests:
+          - unique
+          - not_null
   - name: stg_dept_sales
     config:
-      pre_hook: "{{load_csv(table_name='department_raw', path='department/', key='walmart')}}"
+      pre_hook: "{{load_csv(table_name='department_raw', path='department/')}}"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - store_id
+              - dept_id
+              - store_date
+    columns:
+      - name: store_id
+        data_tests:
+          - not_null
+      - name: dept_id
+        data_tests:
+          - not_null
+      - name: store_date
+        data_tests:
+          - not_null
   - name: stg_signals
     config:
-      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/', key='walmart')}}"
+      pre_hook: "{{load_csv(table_name='fact_raw', path='fact/')}}"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - store_id
+              - store_date
+    columns:
+      - name: store_id
+        data_tests:
+          - not_null
+      - name: store_date
+        data_tests:
+          - not_null
+
 
 sources:  
   - name: walmart
