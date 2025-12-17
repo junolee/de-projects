@@ -1,0 +1,13 @@
+USE ROLE accountadmin;
+USE WAREHOUSE compute_wh;
+
+CREATE OR REPLACE STORAGE INTEGRATION s3_int
+    TYPE = EXTERNAL_STAGE
+    STORAGE_PROVIDER = 'S3'
+    STORAGE_AWS_ROLE_ARN = $aws_role_arn
+    STORAGE_AWS_EXTERNAL_ID = $aws_external_id
+    ENABLED = TRUE
+    STORAGE_ALLOWED_LOCATIONS = (
+    's3://jl-walmart/data/'
+);
+DESC INTEGRATION s3_int;
