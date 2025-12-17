@@ -18,7 +18,7 @@ Outputs:
 ## Architecture
 This pipeline ingests Walmart retail datasets from S3, builds fact and dimensions tables in Snowflake using dbt, captures historical changes, and produces visualizations for BI reporting in Python.
 
-![alt text](image.png)
+![](arch.png)
 
 S3 bucket contains CSV data for each dataset:
 - `stores/stores.csv` - store attributes
