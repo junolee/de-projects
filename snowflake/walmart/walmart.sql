@@ -68,7 +68,7 @@ CREATE OR REPLACE TABLE walmart_db.bronze.fact_raw (
 
 USE SCHEMA walmart_db.silver;
 
-CREATE OR REPLACE TABLE walmart_db.silver.walmart_date_dim (
+CREATE OR REPLACE TABLE walmart_db.silver.dim_date (
     DATE_ID     INT,
     STORE_DATE  DATE,
     ISHOLIDAY   VARCHAR,
@@ -77,7 +77,7 @@ CREATE OR REPLACE TABLE walmart_db.silver.walmart_date_dim (
     LOADED_AT TIMESTAMP
 );
 
-CREATE OR REPLACE TABLE walmart_db.silver.walmart_store_dim (
+CREATE OR REPLACE TABLE walmart_db.silver.dim_store (
     STORE_ID    INT,
     DEPT_ID     INT,
     STORE_TYPE  VARCHAR,
@@ -87,7 +87,7 @@ CREATE OR REPLACE TABLE walmart_db.silver.walmart_store_dim (
     LOADED_AT TIMESTAMP
 );
 
-CREATE OR REPLACE TABLE walmart_db.silver.walmart_fact_table (
+CREATE OR REPLACE TABLE walmart_db.silver.fct_sales_enriched (
     STORE_ID            INT,
     DEPT_ID             INT,
     STORE_WEEKLY_SALES  DECIMAL,
@@ -115,13 +115,13 @@ SELECT * FROM walmart_db.bronze.department_raw;
 SELECT * FROM walmart_db.bronze.fact_raw;
 
 -- after building dbt staging models
-SELECT * FROM walmart_db.bronze.stg_stores_raw;
-SELECT * FROM walmart_db.bronze.stg_department_raw;
-SELECT * FROM walmart_db.bronze.stg_fact_raw;
+SELECT * FROM walmart_db.bronze.stg_stores;
+SELECT * FROM walmart_db.bronze.stg_dept_sales;
+SELECT * FROM walmart_db.bronze.stg_signals;
 
 -- after building dbt silver models
-SELECT * FROM silver.walmart_store_dim;
-SELECT * FROM silver.walmart_date_dim;
-SELECT * FROM silver.walmart_fact_table;
-SELECT * FROM snapshots.walmart_fact_snapshot;
+SELECT * FROM silver.dim_store;
+SELECT * FROM silver.dim_date;
+SELECT * FROM silver.fct_sales_enriched;
+SELECT * FROM snapshots.sales_enriched_snapshot;
 SELECT * FROM gold.weekly_sales;
