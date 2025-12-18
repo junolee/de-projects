@@ -6,45 +6,35 @@ models:
       pre_hook: "{{load_csv(table_name='stores_raw', path='stores/')}}"
     columns:
       - name: store_id
-        data_tests:
-          - unique
-          - not_null
+        data_tests: [unique, not_null]
+
   - name: stg_dept_sales
     config:
       pre_hook: "{{load_csv(table_name='department_raw', path='department/')}}"
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns:
-              - store_id
-              - dept_id
-              - store_date
+            combination_of_columns: [store_id, dept_id, store_date]
     columns:
       - name: store_id
-        data_tests:
-          - not_null
+        data_tests: [not_null]
       - name: dept_id
-        data_tests:
-          - not_null
+        data_tests: [not_null]
       - name: store_date
-        data_tests:
-          - not_null
+        data_tests: [not_null]
+
   - name: stg_signals
     config:
       pre_hook: "{{load_csv(table_name='fact_raw', path='fact/')}}"
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns:
-              - store_id
-              - store_date
+            combination_of_columns: [store_id, store_date]
     columns:
       - name: store_id
-        data_tests:
-          - not_null
+        data_tests: [not_null]
       - name: store_date
-        data_tests:
-          - not_null
+        data_tests: [not_null]
 
 
 sources:  
@@ -54,41 +44,34 @@ sources:
     tables: 
       - name: dept_sales_raw
         identifier: department_raw
+        description: "Weekly sales by store and department - grain: store, department, date (week)"
         data_tests:
           - dbt_utils.unique_combination_of_columns:
               arguments:
-                combination_of_columns:
-                  - store
-                  - dept
-                  - date
+                combination_of_columns: [store, dept, date]
         columns:
           - name: store
-            data_tests:
-              - not_null
+            data_tests: [not_null]
           - name: dept
-            data_tests:
-              - not_null
+            data_tests: [not_null]
           - name: date
-            data_tests:
-              - not_null
+            data_tests: [not_null]
+
       - name: signals_raw
         identifier: fact_raw
+        description: "External drivers & markdown sales - grain: store, week"
         data_tests:
           - dbt_utils.unique_combination_of_columns:
               arguments:
-                combination_of_columns:
-                  - store
-                  - date
+                combination_of_columns: [store, date]
         columns:
           - name: store
-            data_tests:
-              - not_null
+            data_tests: [not_null]
           - name: date
-            data_tests:
-              - not_null
+            data_tests: [not_null]
+
       - name: stores_raw
+        description: "Store attributes including store type and size - grain: store"
         columns:
           - name: store
-            data_tests:
-              - unique
-              - not_null
+            data_tests: [unique, not_null]

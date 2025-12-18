@@ -3,7 +3,7 @@ version: 2
 snapshots:
   - name: sales_enriched_snapshot
     config:
-      unique_key: ['store_id', 'dept_id', 'store_date']
+      unique_key: [store_id, dept_id, store_date]
       strategy: check
       check_cols:
         - store_weekly_sales
@@ -23,15 +23,10 @@ snapshots:
         dbt_scd_id: scd_id
     columns:
       - name: scd_id
-        data_tests:
-          - not_null
-          - unique
+        data_tests: [unique, not_null]
       - name: store_id
-        data_tests:
-          - not_null
+        data_tests: [not_null]
       - name: dept_id
-        data_tests:
-          - not_null
+        data_tests: [not_null]
       - name: store_date
-        data_tests:
-          - not_null
+        data_tests: [not_null]
