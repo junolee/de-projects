@@ -10,9 +10,9 @@ Data sources:
 
 Outputs: 
 - Final tables created in Snowflake using DBT include:
-  - `walmart_store_dim` (SCD1, row per store-department)
-  - `walmart_date_dim` (SCD1, row per week)
-  - `walmart_fact_table` (SCD2, row per store-department-week)
+  - `dim_store` (SCD1, row per store-department)
+  - `dim_date` (SCD1, row per week)
+  - `fct_sales_enriched` (SCD2, row per store-department-week)
 - Visualizations for BI reporting using Python libraries & snowflake connector
 
 ## Architecture
@@ -35,16 +35,16 @@ DBT loads source data from S3, builds fact and dimensions tables in Snowflake, a
 - Loads raw source tables from S3
   - `load_csv` macro runs `COPY INTO` command using args for each table: `stores_raw`, `department_raw`, `fact_raw`
   - Configured as pre-hook for each staging model in bronze layer
-- Builds staging views 1:1 with sources
-  - `stg_stores_raw` (grain: store)
-  - `stg_department_raw` (grain: store-department-week)
-  - `stg_fact_raw` (grain: store-week)
+- Builds staging models 1:1 with sources
+  - `stg_stores` (grain: store)
+  - `stg_dept_sales` (grain: store-department-week)
+  - `stg_signals` (grain: store-week)
 - Builds incremental models implementing SCD1 for
-  - `walmart_store_dim` (grain: store-department)
-  - `walmart_date_dim` (grain: week)
-- Builds SCD2 model for walmart_fact_table in two steps
-  - `walmart_fact_table` (grain: store-department-week)
-  - `walmart_fact_snapshot` (snapshot captures historical changes on table above)
+  - `dim_store` (grain: store-department)
+  - `dim_date` (grain: week)
+- Builds SCD2 model for enriched sales in two steps
+  - `fct_sales_enriched` (grain: store-department-week)
+  - `sales_enriched_snapshot` (snapshot captures historical changes on table above)
 - Python code used to produce visualizations for BI reporting with Python libraries
   - Python-snowflake connector is used to query final tables in Snowflake
   - Matplotlib & seaborn used to create visualizations
@@ -53,14 +53,6 @@ DBT loads source data from S3, builds fact and dimensions tables in Snowflake, a
 ## DBT Lineage Graph
 
 ![](dbt_lineage.png)
-
-
-## Data Quality
-
-Tests planned to add
-- Not null and unique tests for all PKs
-
-
 
 ## Setup
 Run snowflake/walmart.sql to create database and define source tables in Snowflake SQL file.
@@ -100,18 +92,19 @@ Visualizations for BI reporting produced in Python [`walmart_analysis`](../visua
     │   └── walmart
     │       ├── bronze
     │       │   ├── _bronze.yml
-    │       │   ├── stg_stores_raw.sql
-    │       │   ├── stg_department_raw.sql
-    │       │   └── stg_fact_raw.sql
+    │       │   ├── stg_dept_sales.sql
+    │       │   ├── stg_signals.sql
+    │       │   └── stg_stores.sql
     │       ├── silver
-    │       │   ├── walmart_store_dim.sql
-    │       │   ├── walmart_date_dim.sql
-    │       │   └── walmart_fact_table.sql
+    │       │   ├── _silver.yml
+    │       │   ├── dim_store.sql
+    │       │   ├── dim_date.sql
+    │       │   └── fct_sales_enriched.sql
     │       └── gold
     │           └── weekly_sales.sql
     │
     ├── snapshots
-    │   └── walmart_fact_snapshot.sql
+    │   └── sales_enriched_snapshot.sql
     │
     ├── packages.yml        # shared
     └── dbt_project.yml     # shared (multi-project)
