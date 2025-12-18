@@ -109,19 +109,23 @@ CREATE OR REPLACE TABLE walmart_db.silver.fct_sales_enriched (
 
 -- Queries
 
--- after loading
+-- raw source tables
 SELECT * FROM walmart_db.bronze.stores_raw;
 SELECT * FROM walmart_db.bronze.department_raw;
 SELECT * FROM walmart_db.bronze.fact_raw;
 
--- after building dbt staging models
+-- dbt staging models
 SELECT * FROM walmart_db.bronze.stg_stores;
 SELECT * FROM walmart_db.bronze.stg_dept_sales;
 SELECT * FROM walmart_db.bronze.stg_signals;
 
--- after building dbt silver models
+-- dbt silver models
 SELECT * FROM silver.dim_store;
 SELECT * FROM silver.dim_date;
 SELECT * FROM silver.fct_sales_enriched;
+
+-- dbt snapshot
 SELECT * FROM snapshots.sales_enriched_snapshot;
+
+-- dbt gold model
 SELECT * FROM gold.weekly_sales;
