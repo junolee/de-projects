@@ -26,7 +26,7 @@ S3 bucket contains CSV data for each dataset:
 - `fact/fact.csv` - external factors by store and week
 
 Target database is stored in Snowflake with the following schemas:
-- Bronze schema: external stage for S3, raw source tables
+- Bronze schema: external stage for S3, raw source tables, staging views
 - Silver schema: clean tables built by DBT
 - Gold schema: denormalized analytics view built by DBT
 

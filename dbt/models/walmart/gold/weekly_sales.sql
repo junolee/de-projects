@@ -27,7 +27,7 @@ SELECT
     f.markdown2,
     f.markdown3,
     f.markdown4,
-    f.markdown5,
+    f.markdown5
 FROM fact f
 JOIN dates d ON f.store_date = d.store_date
 JOIN stores s ON f.store_id = s.store_id
