@@ -1,7 +1,7 @@
 /*
   dim_store - incremental model (SCD1)
 
-  All stores and its departments with latest store attributes (PK: store_id, dept_id)
+  Store-department dimension with latest store attributes (PK: store_id, dept_id)
 
   Inputs: stg_stores, stg_dept_sales
 

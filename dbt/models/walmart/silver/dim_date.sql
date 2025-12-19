@@ -1,9 +1,9 @@
 /*
   dim_date - incremental model (SCD1)
 
-  Continuous range of dates for the Friday of every week within range in dataset (PK: date_id, Natural Key: store_date)
+  Weekly date dimension (Friday) with continuous coverage via dbt_utils.date_spine (PK: date_id, natural key: store_date)
 
-  Inputs: stg_signals
+  Inputs: stg_signals (observed weeks + isholiday)
 
   Incremental strategy:
     - Watermark = MAX(loaded_at) in {{ this }}

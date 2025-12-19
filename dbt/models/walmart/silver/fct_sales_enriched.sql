@@ -1,4 +1,20 @@
-WITH deduped_store_signals AS (
+/*
+  fct_sales_enriched (current state)
+
+  Weekly department sales joined with weekly signals (PK: store_id, dept_id, store_date)
+
+  Inputs: stg_dept_sales, stg_signals
+
+  Logic:
+  - Deduplicate each input to latest record per key by loaded_at
+  - Left join sales(store-dept-week) to signals (store-week)on date and store
+  
+  History:
+  - Changes captured via snapshot: sales_enriched_snapshot
+ 
+*/
+
+WITH signals AS (
     SELECT
         store_id,
         store_date,
@@ -13,13 +29,12 @@ WITH deduped_store_signals AS (
         markdown5,
         loaded_at
     FROM {{ ref("stg_signals") }}
-    -- Deduplicate by latest loaded_at for freshest record per store-date
     QUALIFY ROW_NUMBER() OVER(
         PARTITION BY store_id, store_date 
         ORDER BY loaded_at DESC ) = 1
 ), 
 
-deduped_dept_sales AS (
+dept_sales AS (
     SELECT
         store_id,
         store_date,
@@ -27,28 +42,26 @@ deduped_dept_sales AS (
         store_weekly_sales,
         loaded_at
     FROM {{ ref("stg_dept_sales") }}
-    -- Deduplicate by latest loaded_at for freshest record per store-dept-date
     QUALIFY ROW_NUMBER() OVER(
         PARTITION BY store_id, store_date, dept_id 
         ORDER BY loaded_at DESC ) = 1
 )
 
 SELECT
-    f.store_id,
-    f.store_date,
+    d.store_id,
+    d.store_date,
     d.dept_id,
     d.store_weekly_sales, 
-    f.fuel_price,
-    f.store_temperature,
-    f.unemployment,
-    f.cpi,
-    f.markdown1,
-    f.markdown2,
-    f.markdown3,
-    f.markdown4,
-    f.markdown5,
-    f.loaded_at
-FROM deduped_dept_sales d       -- Weekly sales per department per store
-JOIN deduped_store_signals f    -- Weekly signals per store
--- Join to add weekly store-level signals to all departments in that store for the week
-ON d.store_date = f.store_date AND d.store_id = f.store_id
+    s.fuel_price,
+    s.store_temperature,
+    s.unemployment,
+    s.cpi,
+    s.markdown1,
+    s.markdown2,
+    s.markdown3,
+    s.markdown4,
+    s.markdown5,
+    COALESCE(GREATEST(d.loaded_at, s.loaded_at), d.loaded_at) AS loaded_at
+FROM dept_sales d
+LEFT JOIN signals s
+ON d.store_date = s.store_date AND d.store_id = s.store_id
