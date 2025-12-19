@@ -1,10 +1,4 @@
-{{
-    config(
-        materialized='table'
-    )
-}}
-
-WITH deduped_store_fact AS (
+WITH deduped_store_signals AS (
     SELECT
         store_id,
         store_date,
@@ -19,8 +13,13 @@ WITH deduped_store_fact AS (
         markdown5,
         loaded_at
     FROM {{ ref("stg_signals") }}
-    QUALIFY ROW_NUMBER() OVER(PARTITION BY store_id, store_date ORDER BY loaded_at DESC) = 1
-), deduped_dept_fact AS (
+    -- Deduplicate by latest loaded_at for freshest record per store-date
+    QUALIFY ROW_NUMBER() OVER(
+        PARTITION BY store_id, store_date 
+        ORDER BY loaded_at DESC ) = 1
+), 
+
+deduped_dept_sales AS (
     SELECT
         store_id,
         store_date,
@@ -28,8 +27,12 @@ WITH deduped_store_fact AS (
         store_weekly_sales,
         loaded_at
     FROM {{ ref("stg_dept_sales") }}
-    QUALIFY ROW_NUMBER() OVER(PARTITION BY store_id, store_date, dept_id ORDER BY loaded_at DESC) = 1
+    -- Deduplicate by latest loaded_at for freshest record per store-dept-date
+    QUALIFY ROW_NUMBER() OVER(
+        PARTITION BY store_id, store_date, dept_id 
+        ORDER BY loaded_at DESC ) = 1
 )
+
 SELECT
     f.store_id,
     f.store_date,
@@ -45,6 +48,7 @@ SELECT
     f.markdown4,
     f.markdown5,
     f.loaded_at
-    FROM deduped_dept_fact d
-    JOIN deduped_store_fact f 
-    ON d.store_date = f.store_date AND d.store_id = f.store_id
+FROM deduped_dept_sales d       -- Weekly sales per department per store
+JOIN deduped_store_signals f    -- Weekly signals per store
+-- Join to add weekly store-level signals to all departments in that store for the week
+ON d.store_date = f.store_date AND d.store_id = f.store_id
