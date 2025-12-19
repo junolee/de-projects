@@ -2,32 +2,36 @@
   weekly_sales
 
   Denormalized analytics view of weekly dept sales + weekly signals + store attributes
-  Grain: store_id, dept_id, store_date (week); store attributes joined on store_id
+  Grain: store_id, dept_id, store_date (week)
   Inputs: sales_enriched_snapshot, dim_store, dim_date
 
   Notes:
   - Filters snapshot to active records (vrsn_end_date IS NULL)
-  - dim_store is store×dept; project store attributes at store level
 */
 
 WITH fact_active AS (
     SELECT * FROM {{ ref("sales_enriched_snapshot") }}
     WHERE vrsn_end_date IS NULL
-), stores AS (
+), 
+
+stores AS (
     SELECT 
         store_id,
+        dept_id,
         store_type,
         store_size
     FROM {{ ref("dim_store") }}
-    QUALIFY ROW_NUMBER() OVER(PARTITION BY store_id ORDER BY loaded_at DESC) = 1
-), dates AS (
+), 
+
+dates AS (
     SELECT * FROM {{ ref("dim_date") }}
 )
+
 SELECT
     f.store_id,
-    f.store_date,
+    f.dept_id, 
+    f.store_date,       
     d.isholiday,
-    f.dept_id,
     s.store_type,
     s.store_size,
     f.store_weekly_sales, 
@@ -42,4 +46,4 @@ SELECT
     f.markdown5
 FROM fact_active f
 JOIN dates d ON f.store_date = d.store_date
-JOIN stores s ON f.store_id = s.store_id
+JOIN stores s ON f.store_id = s.store_id AND f.dept_id = s.dept_id
