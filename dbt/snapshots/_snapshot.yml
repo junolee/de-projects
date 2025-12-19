@@ -2,6 +2,7 @@ version: 2
 
 snapshots:
   - name: sales_enriched_snapshot
+    description: "SCD2 history for fct_sales_enriched - Business key: (store_id, dept_id, store_date)"
     config:
       unique_key: [store_id, dept_id, store_date]
       strategy: check
