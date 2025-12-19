@@ -1,13 +1,25 @@
-WITH fact AS (
+/*
+  weekly_sales
+
+  Denormalized analytics view of weekly dept sales + weekly signals + store attributes
+  Grain: store_id, dept_id, store_date (week); store attributes joined on store_id
+  Inputs: sales_enriched_snapshot, dim_store, dim_date
+
+  Notes:
+  - Filters snapshot to active records (vrsn_end_date IS NULL)
+  - dim_store is store×dept; project store attributes at store level
+*/
+
+WITH fact_active AS (
     SELECT * FROM {{ ref("sales_enriched_snapshot") }}
-    WHERE vrsn_end_date is NULL
+    WHERE vrsn_end_date IS NULL
 ), stores AS (
     SELECT 
         store_id,
         store_type,
         store_size
     FROM {{ ref("dim_store") }}
-    GROUP BY (store_id, store_type, store_size)
+    QUALIFY ROW_NUMBER() OVER(PARTITION BY store_id ORDER BY loaded_at DESC) = 1
 ), dates AS (
     SELECT * FROM {{ ref("dim_date") }}
 )
@@ -28,6 +40,6 @@ SELECT
     f.markdown3,
     f.markdown4,
     f.markdown5
-FROM fact f
+FROM fact_active f
 JOIN dates d ON f.store_date = d.store_date
 JOIN stores s ON f.store_id = s.store_id
