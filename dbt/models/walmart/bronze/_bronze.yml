@@ -1,14 +1,8 @@
 version: 2
 
 models:
-  - name: stg_stores
-    config:
-      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/')}}"
-    columns:
-      - name: store_id
-        data_tests: [unique, not_null]
-
   - name: stg_dept_sales
+    description: "Staging model for weekly department sales - Grain: (store, department, week)"
     config:
       pre_hook: "{{load_csv(table_name='department_raw', path='department/')}}"
     data_tests:
@@ -24,6 +18,7 @@ models:
         data_tests: [not_null]
 
   - name: stg_signals
+    description: "Staging model for weekly signals - Grain: store, week"
     config:
       pre_hook: "{{load_csv(table_name='fact_raw', path='fact/')}}"
     data_tests:
@@ -36,6 +31,13 @@ models:
       - name: store_date
         data_tests: [not_null]
 
+  - name: stg_stores
+    description: "Staging model for stores with attributes (type, size) - Grain: store"
+    config:
+      pre_hook: "{{load_csv(table_name='stores_raw', path='stores/')}}"
+    columns:
+      - name: store_id
+        data_tests: [unique, not_null]
 
 sources:  
   - name: walmart
@@ -44,7 +46,7 @@ sources:
     tables: 
       - name: dept_sales_raw
         identifier: department_raw
-        description: "Weekly sales by store and department - grain: store, department, date (week)"
+        description: "Weekly store department sales - Grain: store, department, week"
         data_tests:
           - dbt_utils.unique_combination_of_columns:
               arguments:
@@ -59,7 +61,7 @@ sources:
 
       - name: signals_raw
         identifier: fact_raw
-        description: "External drivers & markdown sales - grain: store, week"
+        description: "Weekly signals including external drivers & markdown sales - Grain: store, week"
         data_tests:
           - dbt_utils.unique_combination_of_columns:
               arguments:
@@ -71,7 +73,7 @@ sources:
             data_tests: [not_null]
 
       - name: stores_raw
-        description: "Store attributes including store type and size - grain: store"
+        description: "Store attributes including store type and size - Grain: store"
         columns:
           - name: store
             data_tests: [unique, not_null]

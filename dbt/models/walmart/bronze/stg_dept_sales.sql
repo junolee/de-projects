@@ -1,3 +1,15 @@
+/*
+  stg_dept_sales
+
+  Staging model for weekly department sales
+  Grain: 1 row per store-dept-week
+  Source: walmart.dept_sales_raw
+
+  Notes:
+  - Renames + type casts
+  - loaded_at injected via Snowflake COPY INTO INCLUDE_METADATA (scan time)
+*/
+
 WITH source AS (
     SELECT * from {{ source('walmart', 'dept_sales_raw')}}
 ),
