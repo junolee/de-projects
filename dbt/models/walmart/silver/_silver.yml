@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: fct_sales_enriched
-    description: "Enriched weekly sales by store department joined with store-week signals - Grain: (store, department, week)"
+    description: "Weekly department sales joined with weekly signals - Grain: (store, department, week)"
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -16,7 +16,11 @@ models:
         data_tests: [not_null]
 
   - name: dim_store
-    description: "Store departments joined with store-level attributes (store type, size) - Grain: (store, department)"
+    description: "Store-department dimension with latest store attributes - Grain: (store, department)"
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: [store_id, dept_id]
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -28,7 +32,11 @@ models:
         data_tests: [not_null]
 
   - name: dim_date
-    description: "Date (Friday) of every week - Grain: (1 week)"
+    description: "Weekly date dimension (Friday) with continuous coverage via dbt_utils.date_spine - Grain: (1 week)"
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key: [date_id]   
     columns:
       - name: date_id
         data_tests: [not_null, unique]
