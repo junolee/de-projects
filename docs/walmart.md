@@ -3,71 +3,72 @@
 ## Business goal
 Build clean, analytics-ready datasets to study weekly store department sales and how they relate to store attributes and external drivers (fuel price, temperature, unemployment, CPI, markdowns, holidays).
 
-Data sources:
-- Stores attributes for each store
-- Weekly sales by store-department
-- Weekly external factors & markdown sales by store
+Inputs:
+- `stores` - store attributes (type, size)
+- `dept_sales` - weekly sales by store + department
+- `signals` - weekly external factors + markdowns by store
 
 Outputs: 
-- Final tables created in Snowflake using DBT include:
-  - `dim_store` (SCD1, row per store-department)
-  - `dim_date` (SCD1, row per week)
-  - `fct_sales_enriched` (SCD2, row per store-department-week)
-- Visualizations for BI reporting using Python libraries & snowflake connector
+- `dim_store` (SCD1) - grain: (store_id, dept_id)
+- `dim_date` (SCD1) - grain: (store_date) (week-ending Friday)
+- `fct_sales_enriched` - grain: (store_id, dept_id, store_date)
+- `sales_enriched_snapshot` (SCD2) - history of enriched sales
+- `weekly_sales` - denormalized view used by Python
 
 ## Architecture
 This pipeline ingests Walmart retail datasets from S3, builds fact and dimensions tables in Snowflake using dbt, captures historical changes, and produces visualizations for BI reporting in Python.
 
 ![](arch.png)
 
-S3 bucket contains CSV data for each dataset:
-- `stores/stores.csv` - store attributes
-- `department/department.csv` - store department weekly sales
-- `fact/fact.csv` - external factors by store and week
+#### Storage layout
+- S3 bucket contains CSV data for each dataset
+- Snowflake defines the following schemas and objects:
+  - `bronze`: external stage (S3) + raw tables + staging views
+  - `silver`: conformed dimensions (SCD1) + enriched fact
+  - `snapshots`: SCD2 history table (dbt snapshot)
+  - `gold`: denormalized analytics view for consumption
 
-Target database is stored in Snowflake with the following schemas:
-- Bronze schema: external stage for S3, raw source tables
-- Silver schema: clean tables built by DBT
-- Gold schema: denormalized analytics view built by DBT
+#### Pipeline flow (dbt)
 
-DBT loads source data from S3, builds fact and dimensions tables in Snowflake, and captures historical changes.
+1. Ingest raw CSVs from S3
+    - `load_csv` macro runs `COPY INTO` command into raw tables: `stores_raw`, `department_raw`, `fact_raw` (bronze)
+    - Triggered via pre-hook on each staging model
+2. Build staging models (bronze)
+    - `stg_stores` (grain: store)
+    - `stg_dept_sales` (grain: store-department-week)
+    - `stg_signals` (grain: store-week)
+3. Build silver models 
+    - `dim_store` (SCD1, incremental merge) - store + department with latest store attributes
+    - `dim_date` (SCD1, incremental merge) - weekly date spine + flags (e.g. isholiday)
+    - `fct_sales_enriched` - joins weekly sales to signals at store-department-week grain
+4. Build snapshot
+    - `sales_enriched_snapshot` captures historical changes for selected measures
+5. Build gold model
+    - `weekly_sales` joins fact and dimensions to denormalized analytics view
+6. Query and visualize (Python notebook)
+    - Python-snowflake connector is used to query final tables in Snowflake
+    - Matplotlib & seaborn used to create visualizations for BI reporting
+  
 
-- Loads raw source tables from S3
-  - `load_csv` macro runs `COPY INTO` command using args for each table: `stores_raw`, `department_raw`, `fact_raw`
-  - Configured as pre-hook for each staging model in bronze layer
-- Builds staging models 1:1 with sources
-  - `stg_stores` (grain: store)
-  - `stg_dept_sales` (grain: store-department-week)
-  - `stg_signals` (grain: store-week)
-- Builds incremental models implementing SCD1 for
-  - `dim_store` (grain: store-department)
-  - `dim_date` (grain: week)
-- Builds SCD2 model for enriched sales in two steps
-  - `fct_sales_enriched` (grain: store-department-week)
-  - `sales_enriched_snapshot` (snapshot captures historical changes on table above)
-- Python code used to produce visualizations for BI reporting with Python libraries
-  - Python-snowflake connector is used to query final tables in Snowflake
-  - Matplotlib & seaborn used to create visualizations
 
+## Running pipeline
+1) Provision Snowflake objects: `snowflake/walmart.sql`  
+2) Run dbt:
+```bash
+dbt build --select models/walmart/bronze
+dbt build --select models/walmart/silver
+dbt snapshot
+dbt build --select models/walmart/gold
+```
 
 ## DBT Lineage Graph
 
 ![](dbt_lineage.png)
 
-## Setup
-Run snowflake/walmart.sql to create database and define source tables in Snowflake SQL file.
 
-## DBT Job
-Run DBT commands to build pipeline.
-```
-dbt build --select "models/walmart/bronze"
-dbt build --select "models/walmart/silver"
-dbt snapshot
-dbt build --select "models/walmart/gold"
-```
 
 ## Visualizations
-Visualizations for BI reporting produced in Python [`walmart_analysis`](../visualizations/walmart_analysis.ipynb).
+Notebook: [`walmart_analysis`](../visualizations/walmart_analysis.ipynb).
 
 ![](../visualizations/sales_by_store_holiday.png)
 ![](../visualizations/weekly_sales_by_store_type.png)
@@ -109,3 +110,8 @@ Visualizations for BI reporting produced in Python [`walmart_analysis`](../visua
     ├── packages.yml        # shared
     └── dbt_project.yml     # shared (multi-project)
 ```
+
+- `snowflake/walmart.sql` creates database, schemas, external stage, file format, and raw tables in Snowflake
+- `dbt/macros/load_csv.sql` defines pre-hook ingestion macro
+- `dbt/models/walmart/*` defines dbt-managed models
+- `dbt/snapshots/sales_enriched_snapshot.sql` defines the SCD2 snapshot
