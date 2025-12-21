@@ -1,3 +1,15 @@
+/*
+  stg_signals
+
+  Staging model for weekly signals
+  Grain: 1 row per store-week
+  Source: walmart.signals_raw
+
+  Notes:
+  - Renames, type casts, 'NA' -> NULL
+  - loaded_at injected via Snowflake COPY INTO INCLUDE_METADATA (scan time)
+*/
+
 WITH source AS (
     SELECT * from {{ source('walmart', 'signals_raw')}}
 ),

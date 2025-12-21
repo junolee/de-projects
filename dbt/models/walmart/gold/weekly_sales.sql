@@ -1,21 +1,51 @@
+/*
+  weekly_sales
+
+  Denormalized analytics view of weekly dept sales + weekly signals + store attributes
+  Grain: store_id, dept_id, store_date (week)
+  Inputs: fct_sales_enriched, dim_store, dim_date
+*/
+
 WITH fact AS (
-    SELECT * FROM {{ ref("sales_enriched_snapshot") }}
-    WHERE vrsn_end_date is NULL
-), stores AS (
-    SELECT 
+    SELECT
         store_id,
+        store_date,
+        dept_id,
+        store_weekly_sales, 
+        fuel_price,
+        store_temperature,
+        unemployment,
+        cpi,
+        markdown1,
+        markdown2,
+        markdown3,
+        markdown4,
+        markdown5
+    FROM {{ ref("fct_sales_enriched") }}
+), 
+
+stores AS (
+    SELECT
+        store_id,
+        dept_id,
         store_type,
         store_size
     FROM {{ ref("dim_store") }}
-    GROUP BY (store_id, store_type, store_size)
-), dates AS (
-    SELECT * FROM {{ ref("dim_date") }}
+), 
+
+dates AS (
+    SELECT
+        date_id,
+        store_date,
+        isholiday
+    FROM {{ ref("dim_date") }}
 )
+
 SELECT
     f.store_id,
-    f.store_date,
+    f.dept_id, 
+    f.store_date,       
     d.isholiday,
-    f.dept_id,
     s.store_type,
     s.store_size,
     f.store_weekly_sales, 
@@ -27,7 +57,7 @@ SELECT
     f.markdown2,
     f.markdown3,
     f.markdown4,
-    f.markdown5,
+    f.markdown5
 FROM fact f
+JOIN stores s ON f.store_id = s.store_id AND f.dept_id = s.dept_id
 JOIN dates d ON f.store_date = d.store_date
-JOIN stores s ON f.store_id = s.store_id

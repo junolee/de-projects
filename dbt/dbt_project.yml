@@ -32,4 +32,8 @@ models:
         +schema: gold
         +materialized: view
 
-
+snapshots:
+  de_projects:
+    walmart:
+      +database: walmart_db
+      +schema: snapshots

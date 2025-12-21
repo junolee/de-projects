@@ -1,0 +1,33 @@
+version: 2
+
+snapshots:
+  - name: sales_enriched_snapshot
+    description: "SCD2 history for fct_sales_enriched - Business key: (store_id, dept_id, store_date)"
+    config:
+      unique_key: [store_id, dept_id, store_date]
+      strategy: check
+      check_cols:
+        - store_weekly_sales
+        - fuel_price
+        - store_temperature
+        - unemployment
+        - cpi
+        - markdown1
+        - markdown2
+        - markdown3
+        - markdown4
+        - markdown5
+      snapshot_meta_column_names:
+        dbt_updated_at: update_date
+        dbt_valid_from: vrsn_start_date
+        dbt_valid_to: vrsn_end_date
+        dbt_scd_id: scd_id
+    columns:
+      - name: scd_id
+        data_tests: [unique, not_null]
+      - name: store_id
+        data_tests: [not_null]
+      - name: dept_id
+        data_tests: [not_null]
+      - name: store_date
+        data_tests: [not_null]
