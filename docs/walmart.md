@@ -4,9 +4,9 @@
 Build clean, analytics-ready datasets to study weekly store department sales and how they relate to store attributes and external drivers (fuel price, temperature, unemployment, CPI, markdowns, holidays).
 
 Inputs:
-- store attributes (type, size)
-- weekly sales by store + department
-- weekly external factors + markdowns by store
+- Store attributes (type, size)
+- Weekly sales by store + department
+- Weekly external factors + markdowns by store
 
 Outputs: 
 - `dim_store` (SCD1) - grain: (store_id, dept_id)
